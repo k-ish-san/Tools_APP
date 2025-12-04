@@ -37,7 +37,7 @@ const RandomStringGenerator = () => {
           max="32"
           value={length}
           onChange={(e) => setLength(Number(e.target.value))}
-          className="w-full cursor-pointer accent-green-600"
+          className="w-full cursor-pointer accent-blue-600"
         />
       </div>
 
@@ -47,7 +47,7 @@ const RandomStringGenerator = () => {
 
       <button
         onClick={generateRandomString}
-        className="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-md transition"
+        className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-md transition"
       >
         Generate New
       </button>

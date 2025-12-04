@@ -1,11 +1,10 @@
 import { useState } from "react";
 import axios from "axios";
 import LanguageSelector from "../components/LanguageSelector";
-import TranslationResult from "../components/TranslationResult";
 
 const Translator = () => {
   const [sourceLang, setSourceLang] = useState("en");
-  const [targetLang, setTargetLang] = useState("cn");
+  const [targetLang, setTargetLang] = useState("hi");
   const [inputText, setInputText] = useState("");
   const [translatedText, setTranslatedText] = useState("");
   const [loading, setLoading] = useState(false);
@@ -26,7 +25,7 @@ const Translator = () => {
           query: inputText,
         },
         headers: {
-          'x-rapidapi-key': import.meta.env.VITE_RAPIDAPI_KEY,
+          "x-rapidapi-key": import.meta.env.VITE_RAPIDAPI_KEY,
           "x-rapidapi-host": "free-google-translator.p.rapidapi.com",
           "Content-Type": "application/json",
         },
@@ -57,24 +56,30 @@ const Translator = () => {
   return (
     <div className="max-w-xl mx-auto mt-10 p-6 bg-white rounded-2xl shadow-md space-y-4">
       <h1 className="text-2xl font-bold text-center text-gray-800">
-         Text Translator
+        Text Translator
       </h1>
 
       <div className="flex flex-col gap-4">
         <textarea
           value={inputText}
           onChange={(e) => setInputText(e.target.value)}
-          className="w-full p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-green-400"
-          placeholder="Enter text here..."
+          className="w-full p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
+          placeholder="Enter text to translate..."
           rows={4}
+        />
+        <textarea
+          value={translatedText}
+          className="w-full p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
+          placeholder="Translated text will appear here..."
+          rows={4}
+          readOnly
         />
 
         <div className="flex justify-between gap-4">
           <LanguageSelector
             label="From"
             value={sourceLang}
-                      onChange={setSourceLang}
-                
+            onChange={setSourceLang}
           />
           <LanguageSelector
             label="To"
@@ -86,14 +91,12 @@ const Translator = () => {
         <button
           onClick={handleTranslate}
           disabled={loading}
-          className="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 rounded-md transition disabled:opacity-70"
+          className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded-md transition disabled:opacity-70 mt-8"
         >
           {loading ? "Translating..." : "Translate"}
         </button>
 
         {error && <p className="text-red-500 text-sm">{error}</p>}
-
-        <TranslationResult text={translatedText} />
       </div>
     </div>
   );
