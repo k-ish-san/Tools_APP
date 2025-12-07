@@ -118,57 +118,79 @@ const languages: Record<string, string> = {
 };  
 
 
-const LanguageSelector = ({ label, value, onChange }: LanguageSelectorProps) => {
-  const [open, setOpen] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
+const LanguageSelector: React.FC<LanguageSelectorProps> = ({
+  label,
+  value,
+  onChange,
 
-  // close dropdown on outside click
+}) => {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement | null>(null);
+
+  // Close dropdown when clicking outside
   useEffect(() => {
-    const handler = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) {
-        setOpen(false);
-      }
+    const onDocClick = (e: MouseEvent) => {
+      if (!ref.current) return;
+      if (!ref.current.contains(e.target as Node)) setOpen(false);
     };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
+    document.addEventListener("mousedown", onDocClick);
+    return () => document.removeEventListener("mousedown", onDocClick);
+  }, []);
+
+  // keyboard: close on escape
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpen(false);
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
   }, []);
 
   return (
-    <div className="flex flex-col w-1/2" ref={ref}>
-      {/* Toggle Button */}
-       <label className="text-sm text-gray-600 m-1 w-max mx-auto">{label}</label>
-      <div className="relative w-max mx-auto ">
+    <div ref={ref} className="flex flex-col w-full sm:w-1/2">
+      <label className="text-sm text-white/70 mb-1 select-none">{label}</label>
+
+      <div className="relative">
         <button
           type="button"
-          onClick={() => setOpen(!open)}
-          className="sm:w-auto md:w-[180px] px-5 py-2.5 rounded-sm border-2 border-blue-200 cursor-pointer text-gray-700 text-sm font-medium outline-none bg-white text-spacing-wider hover:border-blue-400 flex justify-between items-center"
+          aria-haspopup="listbox"
+          aria-expanded={open}
+          onClick={() => setOpen((s) => !s)}
+          className="w-full px-4 py-2.5 rounded-xl border border-white/10 bg-white/5 backdrop-blur-md
+                     text-white text-sm font-medium flex items-center justify-between gap-3
+                     hover:bg-white/10 transition focus:outline-none focus:ring-2 focus:ring-blue-400"
         >
-          {languages[value]}
+          <span className="truncate">{languages[value] ?? value}</span>
+
           <svg
             xmlns="http://www.w3.org/2000/svg"
-            className="w-3 fill-blue-400 inline ml-2"
+            className={`w-4 h-4 transform transition-transform ${open ? "rotate-180" : "rotate-0"}`}
             viewBox="0 0 24 24"
+            aria-hidden
           >
-            <path
-              fillRule="evenodd"
-              d="M11.99997 18.1669a2.38 2.38 0 0 1-1.68266-.69733l-9.52-9.52a2.38 2.38 0 1 1 3.36532-3.36532l7.83734 7.83734 7.83734-7.83734a2.38 2.38 0 1 1 3.36532 3.36532l-9.52 9.52a2.38 2.38 0 0 1-1.68266.69734z"
-              clipRule="evenodd"
-              data-original="#000000"
-            />
+            <path className="fill-white/70" d="M12 15.5 5 8.5h14l-7 7z" />
           </svg>
         </button>
 
-        {/* Dropdown Menu */}
         {open && (
-          <ul className="absolute block rounded-sm shadow-lg bg-white py-2 z-1000 min-w-full w-max divide-y divide-gray-200 max-h-64 overflow-auto">
+          <ul
+            role="listbox"
+            tabIndex={-1}
+            className="absolute left-0 right-0 mt-2 bg-black/90 rounded-xl
+                       shadow-xl border border-white/10 max-h-56 overflow-y-auto z-50"
+          >
             {Object.entries(languages).map(([code, name]) => (
               <li
                 key={code}
+                role="option"
+                aria-selected={code === value}
                 onClick={() => {
                   onChange(code);
                   setOpen(false);
                 }}
-                className="px-5 py-2.5 hover:bg-blue-50 text-slate-600 text-sm font-medium cursor-pointer"
+                className={`px-4 py-2 text-sm cursor-pointer truncate ${
+                  code === value ? "bg-white/20 text-white" : "text-white/80 hover:bg-white/20"
+                }`}
               >
                 {name}
               </li>
@@ -179,6 +201,5 @@ const LanguageSelector = ({ label, value, onChange }: LanguageSelectorProps) => 
     </div>
   );
 };
-
 
 export default LanguageSelector;

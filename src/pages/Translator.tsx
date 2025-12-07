@@ -1,8 +1,12 @@
 import { useState } from "react";
 import axios from "axios";
+import { ArrowLeft, LanguagesIcon } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import LanguageSelector from "../components/LanguageSelector";
 
 const Translator = () => {
+  const navigate = useNavigate();
+
   const [sourceLang, setSourceLang] = useState("en");
   const [targetLang, setTargetLang] = useState("hi");
   const [inputText, setInputText] = useState("");
@@ -12,70 +16,82 @@ const Translator = () => {
 
   const handleTranslate = async () => {
     if (!inputText.trim()) return;
+
     setLoading(true);
     setError(null);
 
     try {
-      const options = {
+      const response = await axios.request({
         method: "POST",
         url: "https://free-google-translator.p.rapidapi.com/external-api/free-google-translator",
-        params: {
-          from: sourceLang,
-          to: targetLang, // ✅ added
-          query: inputText,
-        },
+        params: { from: sourceLang, to: targetLang, query: inputText },
         headers: {
           "x-rapidapi-key": import.meta.env.VITE_RAPIDAPI_KEY,
           "x-rapidapi-host": "free-google-translator.p.rapidapi.com",
-          "Content-Type": "application/json",
         },
         data: { translate: inputText },
-      };
+      });
 
-      const response = await axios.request(options);
-
-      // The API usually returns translated text in response.data.data or response.data.translatedText
       const translated =
         response.data?.translation ||
         response.data?.data?.translation ||
-        JSON.stringify(response.data, null, 2);
+        "Unexpected API response";
 
       setTranslatedText(translated);
-    } catch (err: any) {
-      console.error("Translation error:", err);
-      if (err.response?.status === 429) {
-        setError("Rate limit exceeded. Please wait and retry later.");
-      } else {
-        setError("Error translating text.");
-      }
+    } catch {
+      setError("Error translating text.");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="max-w-xl mx-auto mt-10 p-6 bg-white rounded-2xl shadow-md space-y-4">
-      <h1 className="text-2xl font-bold text-center text-gray-800">
-        Text Translator
-      </h1>
+    <div className="min-h-screen bg-[#0a0f1c] px-6 py-10">
+      {/* 🔹 TOP BAR */}
+      <div className="max-w-2xl mx-auto flex items-center gap-4 mb-6">
+        <button
+          onClick={() => navigate("/")}
+          className="p-2 rounded-lg bg-blue-500/10 border border-blue-400/20 
+                     text-white/80 hover:text-white hover:bg-blue-500/20 transition cursor-pointer"
+        >
+          <ArrowLeft className="h-6 w-6" />
+        </button>
 
-      <div className="flex flex-col gap-4">
+        <div className="p-2 rounded-lg bg-blue-500/10 border border-blue-400/20">
+          <LanguagesIcon className="h-6 w-6 text-blue-400" />
+        </div>
+        <h1 className="text-2xl font-semibold text-white flex-1 ">
+          Text Translator
+        </h1>
+      </div>
+
+      {/* 🔹 MAIN CARD */}
+      <div
+        className="max-w-2xl mx-auto bg-white/5 border border-white/10 
+                      p-6 rounded-2xl backdrop-blur-xl shadow-lg"
+      >
+        {/* Input Text */}
         <textarea
           value={inputText}
           onChange={(e) => setInputText(e.target.value)}
-          className="w-full p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
+          className="w-full p-3 rounded-xl bg-white/10 border border-white/20 text-white 
+                     focus:outline-none focus:ring-2 focus:ring-blue-400"
           placeholder="Enter text to translate..."
           rows={4}
         />
+
+        {/* Output Text */}
         <textarea
           value={translatedText}
-          className="w-full p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
+          readOnly
+          className="w-full p-3 mt-4 rounded-xl bg-white/10 border border-white/20 text-white/80 
+                     focus:outline-none"
           placeholder="Translated text will appear here..."
           rows={4}
-          readOnly
         />
 
-        <div className="flex justify-between gap-4">
+        {/* Language selectors */}
+        <div className="flex gap-4 mt-4">
           <LanguageSelector
             label="From"
             value={sourceLang}
@@ -88,15 +104,17 @@ const Translator = () => {
           />
         </div>
 
+        {/* Translate Button */}
         <button
           onClick={handleTranslate}
           disabled={loading}
-          className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded-md transition disabled:opacity-70 mt-8"
+          className="w-full mt-6 bg-linear-to-br from-blue-400 to-blue-600 hover:bg-linear-to-br hover:from-blue-800 hover:to-blue-900 text-white font-semibold py-3 rounded-xl transition disabled:opacity-70"
         >
           {loading ? "Translating..." : "Translate"}
         </button>
 
-        {error && <p className="text-red-500 text-sm">{error}</p>}
+        {/* Error */}
+        {error && <p className="text-red-400 text-sm mt-2">{error}</p>}
       </div>
     </div>
   );
